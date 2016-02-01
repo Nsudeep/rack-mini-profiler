@@ -4,6 +4,9 @@ module Rack
 
       include Rack::MiniProfiler::ProfilingMethods
 
+      @result_json="".to_json
+      @jsonbody="".to_json
+
       def generate_id
         rand(36**20).to_s(36)
       end
@@ -80,6 +83,7 @@ module Rack
     end
 
     def serve_results(env)
+      #binding.pry
       request     = Rack::Request.new(env)
       id          = request[:id]
       page_struct = @storage.load(id)
@@ -95,23 +99,26 @@ module Rack
         @storage.save(page_struct)
         @storage.set_viewed(user(env), id)
       end
+      @result_json = page_struct.to_json
+      ::File.open("./pageStruct.json","w+")  {|f| f.write(@result_json) }
 
-      result_json = page_struct.to_json
       # If we're an XMLHttpRequest, serve up the contents as JSON
+      #binding.pry
       if request.xhr?
-        [200, { 'Content-Type' => 'application/json'}, [result_json]]
+        [200, { 'Content-Type' => 'application/json'}, [@result_json]]
       else
 
         # Otherwise give the HTML back
         html = MiniProfiler.share_template.dup
         html.gsub!(/\{path\}/, "#{env['RACK_MINI_PROFILER_ORIGINAL_SCRIPT_NAME']}#{@config.base_url_path}")
         html.gsub!(/\{version\}/, MiniProfiler::ASSET_VERSION)
-        html.gsub!(/\{json\}/, result_json)
+        html.gsub!(/\{json\}/, @result_json)
         html.gsub!(/\{includes\}/, get_profile_script(env))
         html.gsub!(/\{name\}/, page_struct[:name])
         html.gsub!(/\{duration\}/, "%.1f" % page_struct.duration_ms)
 
-        [200, {'Content-Type' => 'text/html'}, [html]]
+        #[200, {'Content-Type' => 'text/html'}, [html]]
+        [200, { 'Content-Type' => 'application/json'}, [@result_json]]
       end
 
     end
@@ -320,11 +327,18 @@ module Rack
       page_struct[:user] = user(env)
       page_struct[:root].record_time((Time.now - start) * 1000)
 
+
       if flamegraph
         body.close if body.respond_to? :close
         return self.flamegraph(flamegraph)
       end
 
+
+      if query_string =~ /profile=on/
+          body.close if body.respond_to? :close
+          content_type = headers['Content-Type']
+          return profile_data(content_type,page_struct)
+      end
 
       begin
         # no matter what it is, it should be unviewed, otherwise we will miss POST
@@ -337,14 +351,21 @@ module Rack
           result = inject_profiler(env,status,headers,body)
           return result if result
         end
+        #binding.pry
       rescue Exception => e
         if @config.storage_failure != nil
           @config.storage_failure.call(e)
         end
       end
 
+      #binding.pry
+
       client_settings.write!(headers)
+
+
       [status, headers, body]
+
+      #binding.pry
 
     ensure
       # Make sure this always happens
@@ -355,6 +376,7 @@ module Rack
       # mini profiler is meddling with stuff, we can not cache cause we will get incorrect data
       # Rack::ETag has already inserted some nonesense in the chain
       content_type = headers['Content-Type']
+
 
       if config.disable_caching
         headers.delete('ETag')
@@ -367,11 +389,11 @@ module Rack
       if headers.is_a? Hash
         headers['X-MiniProfiler-Ids'] = ids_json(env)
       end
-
+      #binding.pry
       if current.inject_js && content_type =~ /text\/html/
         response = Rack::Response.new([], status, headers)
         script   = self.get_profile_script(env)
-
+        ::File.open("./bodycode.html","w+")  {|f| f.write(body) }
         if String === body
           response.write inject(body,script)
         else
@@ -380,7 +402,14 @@ module Rack
         body.close if body.respond_to? :close
         response.finish
       else
-        nil
+        #binding.pry
+        #nil
+        if content_type =~ /application\/json/
+          #binding.pry
+         @jsonbody = body.body
+         # binding.pry
+         puts "Hello, world"
+        end
       end
     end
 
@@ -535,12 +564,28 @@ module Rack
       "pp=<a href='#{link}'>#{postfix}</a>"
     end
 
+     def profile_data(content_type, page_struct)
+
+      headers = {'Content-Type' => 'text/plain'}
+      body    = @result_json.to_s
+      #binding.pry
+      if content_type =~ /application\/json/
+        page_struct_json = ::JSON.parse(page_struct.to_json)
+
+        profile_data={}
+        profile_data[:data] = ::JSON.parse(@jsonbody)
+        profile_data[:profile_info] = page_struct_json
+        body = profile_data.to_json
+      end
+
+      [200, headers, [body]]
+     end
+
     def help(client_settings, env)
       headers = {'Content-Type' => 'text/html'}
       body = "<html><body>
 <pre style='line-height: 30px; font-size: 16px;'>
 Append the following to your query string:
-
   #{make_link "help", env} : display this screen
   #{make_link "env", env} : display the rack environment
   #{make_link "skip", env} : skip mini profiler for this request

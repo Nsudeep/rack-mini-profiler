@@ -17,6 +17,7 @@ module Rack
             :id                                      => timer_id,
             :name                                    => page_name,
             :started                                 => started_at,
+            :date_time                               => Time.now,
             :machine_name                            => machine_name,
             :level                                   => 0,
             :user                                    => "unknown user",

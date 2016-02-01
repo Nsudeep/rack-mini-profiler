@@ -87,7 +87,6 @@ module Rack
           end
 
           parent_timer = Rack::MiniProfiler.current.current_timer
-
           if type == :counter
             start = Time.now
             begin
@@ -95,6 +94,7 @@ module Rack
             ensure
               duration_ms = (Time.now - start).to_f * 1000
               parent_timer.add_custom(name, duration_ms, Rack::MiniProfiler.current.page_struct )
+
             end
           else
             Rack::MiniProfiler.current.current_timer = current_timer = parent_timer.add_child(name)

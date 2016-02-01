@@ -27,6 +27,7 @@ GEM
       json
       simplecov
       url
+    coderay (1.1.0)
     commonjs (0.2.7)
     dalli (2.6.4)
     diff-lcs (1.2.5)
@@ -41,7 +42,12 @@ GEM
     less (2.4.0)
       commonjs (~> 0.2.7)
     libv8 (3.16.14.11)
+    method_source (0.8.2)
     multi_json (1.8.2)
+    pry (0.10.3)
+      coderay (~> 1.1.0)
+      method_source (~> 0.8.1)
+      slop (~> 3.4)
     rack (1.5.2)
     rack-test (0.6.2)
       rack (>= 1.0)
@@ -63,6 +69,7 @@ GEM
       multi_json (~> 1.0)
       simplecov-html (~> 0.8.0)
     simplecov-html (0.8.0)
+    slop (3.6.0)
     therubyracer (0.12.0)
       libv8 (~> 3.16.14.0)
       ref
@@ -80,6 +87,7 @@ DEPENDENCIES
   dalli
   flamegraph
   less
+  pry
   rack-mini-profiler!
   rack-test
   rake
@@ -88,4 +96,4 @@ DEPENDENCIES
   therubyracer
 
 BUNDLED WITH
-   1.10.6
+   1.11.2

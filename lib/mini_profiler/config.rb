@@ -32,10 +32,11 @@ module Rack
           @pre_authorize_cb = lambda {|env| true}
 
           # called after rack chain, to ensure we are REALLY allowed to profile
-          @position               = 'left'  # Where it is displayed
+          @position               = 'right'  # Where it is displayed
           @skip_schema_queries    = false
-          @storage                = MiniProfiler::MemoryStore
+          #@storage                = MiniProfiler::MemoryStore
           @user_provider          = Proc.new{|env| Rack::Request.new(env).ip}
+          #@user_provider          = Proc.new{|env| CurrentUser.get(env)}
           @authorization_mode     = :allow_all
           @toggle_shortcut        = 'Alt+P'
           @start_hidden           = false

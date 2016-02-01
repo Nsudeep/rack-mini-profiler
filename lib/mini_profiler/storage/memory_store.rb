@@ -4,7 +4,6 @@ module Rack
 
       # Sub-class thread so we have a named thread (useful for debugging in Thread.list).
       class CacheCleanupThread < Thread
-
         def initialize(interval, cycle, store)
           super
           @store       = store
