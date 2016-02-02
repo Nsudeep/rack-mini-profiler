@@ -340,6 +340,16 @@ module Rack
           return profile_data(content_type,page_struct)
       end
 
+      if query_string =~ /stats=on/
+        body.close if body.respond_to? :close
+        content_type = headers['Content-Type']
+        return stats
+        #if query_string =~ /startdate=/
+         # if query_string =~ /enddate=/
+      end
+
+
+
       begin
         # no matter what it is, it should be unviewed, otherwise we will miss POST
         @storage.set_unviewed(page_struct[:user], page_struct[:id])
@@ -578,6 +588,28 @@ module Rack
         body = profile_data.to_json
       end
 
+      [200, headers, [body]]
+     end
+
+     def stats
+      headers = {'Content-Type' => 'text/html'}
+      redisobj=RedisStore.new
+      result = redisobj.bottom(10)
+      body = "<html><body> <h1>The slowest paths are:</h1>
+              <ol>
+                <li>#{result[0]}</li>
+                <li>#{result[1]}</li>
+                <li>#{result[2]}</li>
+                <li>#{result[3]}</li>
+                <li>#{result[4]}</li>
+                <li>#{result[5]}</li>
+                <li>#{result[6]}</li>
+                <li>#{result[7]}</li>
+                <li>#{result[8]}</li>
+                <li>#{result[9]}</li>
+              </ol>
+              </body></html>"
+      #body = body + result.to_s
       [200, headers, [body]]
      end
 
