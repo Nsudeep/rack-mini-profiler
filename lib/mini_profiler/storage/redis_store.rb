@@ -105,7 +105,7 @@ unviewed_ids: #{get_unviewed_ids(user)}
           pathHash["#{path}"] = duration
         end
         sorted_by_duration = pathHash.sort_by{|pathname,duration| -duration}.to_a
-        sorted_by_duration[0..n]
+        sorted_by_duration[0..n-1]
       end
 
       private
