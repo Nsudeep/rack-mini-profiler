@@ -100,7 +100,7 @@ module Rack
         @storage.set_viewed(user(env), id)
       end
       @result_json = page_struct.to_json
-      ::File.open("./pageStruct.json","w+")  {|f| f.write(@result_json) }
+      #::File.open("./pageStruct.json","w+")  {|f| f.write(@result_json) }
 
       # If we're an XMLHttpRequest, serve up the contents as JSON
       #binding.pry
@@ -403,7 +403,7 @@ module Rack
       if current.inject_js && content_type =~ /text\/html/
         response = Rack::Response.new([], status, headers)
         script   = self.get_profile_script(env)
-        ::File.open("./bodycode.html","w+")  {|f| f.write(body) }
+        #::File.open("./bodycode.html","w+")  {|f| f.write(body) }
         if String === body
           response.write inject(body,script)
         else
