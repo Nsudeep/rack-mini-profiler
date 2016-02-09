@@ -1,7 +1,7 @@
 module Rack
   class MiniProfiler
     class RedisStore < AbstractStore
-      EXPIRES_IN_SECONDS = 60 * 60 * 24
+      EXPIRES_IN_SECONDS = 60 * 60 * 24 * 7
 
       def initialize(args = nil)
         @args               = args || {}
