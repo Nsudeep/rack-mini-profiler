@@ -117,8 +117,8 @@ module Rack
         html.gsub!(/\{name\}/, page_struct[:name])
         html.gsub!(/\{duration\}/, "%.1f" % page_struct.duration_ms)
 
-        #[200, {'Content-Type' => 'text/html'}, [html]]
-        [200, { 'Content-Type' => 'application/json'}, [@result_json]]
+        [200, {'Content-Type' => 'text/html'}, [html]]
+        #[200, { 'Content-Type' => 'application/json'}, [@result_json]]
       end
 
     end
